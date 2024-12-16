@@ -16,6 +16,8 @@ class Store:
         self.admin = ''
         self.curently_path_store= ''
         self.curently_path_depot= ''
+        self.shopping_cart_dict={}
+        self.data_product_curently_store = {}
         
     
     def create_store(self,name:str):
@@ -23,7 +25,7 @@ class Store:
         with open(self.path_store,'r+') as file:
             all_store = json.load(file)
             
-            if name in all_store.key():
+            if name in all_store.keys():
                 return 0
             else:
                 all_store[name]= f'/{name}.json'
@@ -35,7 +37,7 @@ class Store:
         with open(self.path_store,'r+') as file:
             all_store = json.load(file)
             
-            if name_store in all_store.key():
+            if name_store in all_store.keys():
                 self.curently_path_store = all_store[name_store]
                 return 1
             else:
@@ -51,7 +53,7 @@ class Store:
         with open(self.curently_path_store,'r+') as file:
             data_store = json.load(file)
         
-            if name in data_store.key():
+            if name in data_store.keys():
                 return 0
             else:
                 data_store[name]=number
@@ -66,7 +68,7 @@ class Store:
         with open(self.curently_path_store,'r+') as file:
             data_store = json.load(file)
             
-            if name in data_store.key():
+            if name in data_store.keys():
                 print(f"{name} = {data_store[name]}")   
                 while(1):
                     chose_inp = int(input("1 = update name \n2 = update number\n3 = exit\nplease chose a option :"))  
@@ -101,8 +103,9 @@ class Store:
         with open(self.path_store,'r') as file:
             all_store = json.load(file)
         
-        for i in all_store.key():
+        for i in all_store.keys():
             print(f'{count}-{i}')
+            count += 1
         while(1):
             inp_store = int(input("please enter number of store:(Exit = 0) "))
             if inp_store > count or inp_store <0 :
@@ -116,7 +119,57 @@ class Store:
                     if flag == 0 :
                         print("bad input.")
                         continue
-            
+    
+    
+    def show_store_product(self):
+        with open(self.curently_path_store,'r') as file:
+            object_store = json.load(file)
+            count = 1
+            for i ,j in object_store.items():
+                print(f"{count} - {i} : price = {j[1]} : stock = {j[0]} : Description  = {j[2]}")
+                count += 1
+            self.data_product_curently_store=object_store
+        
+    def Buy_product(self,inp_prouduct : dict):
+        select_product = input("Please enter the name product:")
+        if select_product not in inp_prouduct.keys():
+            inp = input("this product not exist.(try agein = 0 , menu = 1)")
+            if inp == '0':
+                self.Buy_product(inp_prouduct)
+            else:
+                pass
+        else:
+            number_product = input("please enter number of product: ")
+            check = self.check_stock(inp_prouduct,number_product,select_product)
+            if not check:
+                print("This value is not available,Try Again")
+                self.Buy_product(inp_prouduct)
+            else:
+                inp_prouduct[select_product][0] = check
+                inp = input("going shopping cart?(1 = yes , 0 = no)")
+                if inp == '1':
+                    self.shopping_cart()
+                    self.data_product_curently_store = inp_prouduct
+                elif inp == '0':
+                    self.Buy_product()
+                else:
+                    print('bad input,fuck you.\n shopping cart.....')
+                    self.shopping_cart()  
+                      
+    def check_stock(self,inp_product:dict,number,name):
+        if number > inp_product[name][0]:
+            return 0
+        else:
+            self.shopping_cart_dict[name] = [number,inp_product[name][1]]
+                
+            return  int(inp_product[name][0])-number
+        
+    
+    def shopping_cart(self):
+        inp = input("1 = Show_product\n2 = Payment\n3 = Menu")          
+          
+        
+        
     def authorization_seller(self):
         while(1):
             with open("/seller_user.json",'r') as users_seller:
@@ -130,23 +183,6 @@ class Store:
                         else:
                             print(f"unvalid password : {3-i} chance")
                             continue                            
-                    
-                    
-                    
-                     
-    def menu(self):
-        print("Welcome to store")
-        inp = int(input("1 = Customers \n2 = The seller\n3 = Admin\n4 = Exit\nPlease chose a option: "))  
-        if inp == 1:
-            self.show_stores()
-        elif inp == 2 :
-            self.authorization_seller()
-            # self.show_product()
-            pass
-        elif inp == 3:
-            pass
-        elif inp == 4:
-            print(" Thanks for coming.\nGood by")
-            exit(0)   
+                      
                 
                         
