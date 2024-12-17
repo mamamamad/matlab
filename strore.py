@@ -1,5 +1,6 @@
 import json
-
+import shamsi_datetime as persian_time
+from datetime import datetime
 
 class Store:
     """
@@ -11,26 +12,39 @@ class Store:
     """
     
     def __init__(self):
-        self.path_depots = '/depots_path.json'
-        self.path_store = '/stors_path.json'
+        self.path_depots = '/home/mmd/vscode/matlab/database/depots_path.json'
+        self.path_store = '/home/mmd/vscode/matlab/database/stors_path.json'
         self.admin = ''
         self.curently_path_store= ''
         self.curently_path_depot= ''
+        self.store_sell_data_path = ''
         self.shopping_cart_dict={}
         self.data_product_curently_store = {}
         
     
     def create_store(self,name:str):
         ''' this def can create a new strore.'''
-        with open(self.path_store,'r+') as file:
-            all_store = json.load(file)
-            
+        with open(self.path_store,'r') as file:
+            all_store = {}
+            try:
+                all_store = json.load(file)
+                
+            except:
+                pass
+        with open(self.path_store,'w') as file:
             if name in all_store.keys():
-                return 0
+                    return 0
             else:
                 all_store[name]= f'/{name}.json'
-                json.dump(all_store,self.path_store,indent= 4)
+                print(all_store)
+                json.dump(all_store,file,indent= 4)
                 return 1
+            
+            
+            
+            
+             
+                
             
     def select_store(self,name_store:str):
         '''this def select store in the all stores.'''
@@ -39,6 +53,7 @@ class Store:
             
             if name_store in all_store.keys():
                 self.curently_path_store = all_store[name_store]
+                self.store_sell_data_path = f'sell_{all_store[name_store]}'
                 return 1
             else:
                 return 0
@@ -58,6 +73,7 @@ class Store:
             else:
                 data_store[name]=number
                 json.dump(data_store,self.curently_path_store,indent=4)
+                
     def update_object_store(self,name:str):
         '''This function updates an existing object using its name or number.'''
 
@@ -160,16 +176,50 @@ class Store:
         if number > inp_product[name][0]:
             return 0
         else:
-            self.shopping_cart_dict[name] = [number,inp_product[name][1]]
+            date = str(persian_time.ShamsiDateTime())
+            now = datetime.now()
+            current_time = str(now.strftime("%H:%M:%S"))
+            
+            self.shopping_cart_dict[name] = [number,inp_product[name][1],date,current_time]
                 
             return  int(inp_product[name][0])-number
         
     
     def shopping_cart(self):
-        inp = input("1 = Show_product\n2 = Payment\n3 = Menu")          
+        inp = input("1 = Payment\n2 = Menu")          
+        n = 1
+        for i ,j in self.shopping_cart.items():
+            print(f'{n} - {i} | {j[0]} | {j[0]*j[1]}')
+            n+=1
+        if inp == '1':
+            self.payment()
+        elif inp == '2':
+            pass
+        else:
+            print("bad input.")
+            
+    def save_all_data(self):
+        try:
+            with open(self.curently_path_store,'w') as file:
+                json.dump(self.data_product_curently_store,file,indent=4)
+            with open(self.store_sell_data_path,'w') as file:
+                json.dump(self.shopping_cart_dict,file,indent=4)
+        except:
+            return 0 
+                
+    def payment(self):
+        inp = input("are you sure for pament ?? (Yes = 1 , No = 0)")
+        if inp == '1':
+            i = self.save_all_data()
+            print("thanks for shopping.")
+            if i == 0 :
+                print("eRooor")
+            else:
+                pass
+        elif inp == '0':
+            print("menu...")
+            pass
           
-        
-        
     def authorization_seller(self):
         while(1):
             with open("/seller_user.json",'r') as users_seller:

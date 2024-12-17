@@ -27,7 +27,9 @@ def menu(inp):
             # self.show_product()
             pass
         elif inp == 3:
+            # store.create_store('hasan')
             pass
+            
         elif inp == 4:
             print(" Thanks for coming.\nGood by")
             exit(0) 
