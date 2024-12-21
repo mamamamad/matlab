@@ -83,7 +83,7 @@ class Store:
             with open(self.curently_path_store,'w') as file:
                 data_store = {}
                 data_store[name]=[number,price]
-                json.dump(data_store,self.curently_path_store,indent=4)
+                json.dump(data_store,file,indent=4)
         else:
             if name == '' or number < 0:
                 return 2
@@ -117,7 +117,7 @@ class Store:
         if not self.check_exist_file(self.curently_path_store):
             print("this store is not exist.")
         else:
-            with open(self.curently_path_store,'r+') as file:
+            with open(self.curently_path_store,'r') as file:
                 data_store = json.load(file)
                 
                 if name in data_store.keys():
@@ -125,13 +125,14 @@ class Store:
                     while(1):
                         chose_inp = int(input("1 = update name \n2 = update number\n3 = update price\n4 = exit\nplease chose a option :"))  
                         if chose_inp == 1:
-                            inp_name = inp_number("please enter new name: ")
+                            inp_name = input("please enter new name: ")
                             if inp_name == '':
                                 print("the unvalid input , try again")
                                 continue
                             else :
                                 data_store[inp_name] = data_store.pop(name)
-                            json.dump(data_store,self.curently_path_store,indent=4) 
+                            with open(self.curently_path_store,'w') as file:
+                                    json.dump(data_store,file,indent=4) 
                             break                                                                                                                    
                         elif chose_inp == 2:
                             inp_number = int(input("please enter new number: "))
@@ -141,7 +142,8 @@ class Store:
                             else:
                                 data_store[name][0] = inp_number
                             
-                            json.dump(data_store,self.curently_path_store,indent=4)
+                            with open(self.curently_path_store,'w') as file:
+                                    json.dump(data_store,file,indent=4)
                             break
                         elif chose_inp == 3:
                             inp_number = int(input("please enter new price: "))
@@ -151,7 +153,8 @@ class Store:
                             else:
                                 data_store[name][1] = inp_number
                             
-                            json.dump(data_store,self.curently_path_store,indent=4)
+                            with open(self.curently_path_store,'w') as file:
+                                    json.dump(data_store,file,indent=4)
                             break
                         elif chose_inp == 4:
                             break
@@ -268,11 +271,49 @@ class Store:
             else:
                 data = {}
                 with open(self.store_sell_data_path,'r') as file:
-                    data = json.load(self.shopping_cart_dict,file,indent=4)
+                    data = json.load(file)
+                        
 
         except:
             return 0 
-                       
+    def delete_product(self,name:str):
+        if not self.check_exist_file(self.curently_path_store):
+            print("not exist.")
+        else:
+            with open(self.curently_path_store,'r') as file:
+                data = json.load(file)
+                if name in data.keys():
+                    
+                    data.pop(name)
+                    with open(self.curently_path_store,'w') as file2:
+                        json.dump(data,file2,indent=4)
+                    print("product deleted.")
+                else:
+                    print("not founded product.")
+        
+    
+    def delete_store(self,name:str):
+        if not self.check_exist_file(self.path_store):
+            print("not exist.")
+        else:
+            with open(self.path_store,'r') as file:
+                data = json.load(file)
+                if name in data.keys():
+                    data.pop(name)
+                    with open(self.path_store,'w') as file2:
+                        json.dump(data,file2,indent=4)
+                    
+                    print("delete store.")
+                else:
+                    print("not store.")
+        
+        
+        
+        
+        
+        
+    
+                    
     def payment(self):
         inp = input("are you sure for payment ?? (Yes = 1 , No = 0)")
         if inp == '1':
@@ -307,30 +348,41 @@ class Store:
     def menu_admin(self):
         while(1):
             self.authorization_Admin()
+            inp1 = input('Create or update product = 1 , Delete product = 2 , Delete store = 3 , Create store = 4  , Exit = 0')
             self.show_stores()
-            inp = input("Add product = 1 , Update product = 2 , Delete product = 3 , Delete store = 4 , Create store = 5  , Exit = 0: ")
-            if inp == '1':
-                name = input('please enter name: ')
-                number = input('please enter number: ')
-                price = input('please enter price: ')
-                volume = input('please enter volume: ')
-                des = input('please enter Description: ')
-                self.add_object_store(name,int(number),int(price),int(volume),des)
-                print("added")
-            elif inp == '2':
+            
+            if inp1 == '1':
+                inp = input("Add product = 1 , Update product = 2 , Exit = 0: ")
+                if inp == '1':
+                    name = input('please enter name: ')
+                    number = input('please enter number: ')
+                    price = input('please enter price: ')
+                    volume = input('please enter volume: ')
+                    des = input('please enter Description: ')
+                    self.add_object_store(name,int(number),int(price),int(volume),des)
+                    print("added")
+                elif inp == '2':
+                    self.show_store_product()
+                    name = input('please enter name: ')
+                    self.update_object_store(name)
+                    print("updated.")
+                elif inp == '0':
+                    pass
+                else:
+                    pass
+            elif inp1 == '2':
                 self.show_store_product()
                 name = input('please enter name: ')
-                self.update_object_store(name)
-                print("updated.")
-            elif inp == '3':
-                pass
-            elif inp == '4':
-                pass  
-            elif inp == '5':
+                self.delete_product(name)
+                
+            elif inp1 == '3':
+                name = input('please enter name: ')
+                self.delete_store(name)
+            elif inp1 == '4':
                 name = input('please enter name: ')
                 self.create_store(name)
                 price("created") 
-            elif inp == '0':
+            elif inp1 == '0':
                 break 
             else:
                 print("by.") 
