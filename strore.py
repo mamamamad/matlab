@@ -1,6 +1,7 @@
 import json
 import shamsi_datetime as persian_time
 from datetime import datetime
+import os
 
 class Store:
     """
@@ -12,8 +13,8 @@ class Store:
     """
     
     def __init__(self):
-        self.path_depots = '/home/mmd/vscode/matlab/database/depots_path.json'
-        self.path_store = '/home/mmd/vscode/matlab/database/stors_path.json'
+        self.path_depots = '/Users/mohamad/Documents/vscode/matlab/jsons_file/depots_path.json'
+        self.path_store = '/Users/mohamad/Documents/vscode/matlab/jsons_file/stors_path.json'
         self.admin = ''
         self.curently_path_store= ''
         self.curently_path_depot= ''
@@ -21,130 +22,187 @@ class Store:
         self.shopping_cart_dict={}
         self.data_product_curently_store = {}
         
+    def check_exist_file(self,path):
+        if os.path.exists(path):
+            return 1
+        else:
+            return 0
+            
+ 
     
     def create_store(self,name:str):
         ''' this def can create a new strore.'''
-        with open(self.path_store,'r') as file:
-            all_store = {}
-            try:
-                all_store = json.load(file)
+        
+        all_store ={}
+        if not self.check_exist_file(self.path_store):
+            
+            with open(self.path_store,'w') as file:
+                all_store[name]= f'/Users/mohamad/Documents/vscode/matlab/jsons_file/store/{name}.json'
                 
-            except:
-                pass
-        with open(self.path_store,'w') as file:
-            if name in all_store.keys():
-                    return 0
-            else:
-                all_store[name]= f'/{name}.json'
-                print(all_store)
                 json.dump(all_store,file,indent= 4)
                 return 1
+        else:
+            with open(self.path_store,'r') as file:
+                try:
+                    all_store = json.load(file)  
+                except:
+                    pass
+                    
+            with open(self.path_store,'w') as file:
+                if name in all_store.keys():
+                        
+                        json.dump(all_store,file,indent= 4)
+                        print("the store exist.")
+                        return 0
+                else:
+                    all_store[name]= f'/Users/mohamad/Documents/vscode/matlab/jsons_file/store/{name}.json'
+                    json.dump(all_store,file,indent= 4)
+                    return 1
             
-            
-            
-            
-             
-                
-            
+                   
     def select_store(self,name_store:str):
         '''this def select store in the all stores.'''
-        with open(self.path_store,'r+') as file:
-            all_store = json.load(file)
-            
-            if name_store in all_store.keys():
-                self.curently_path_store = all_store[name_store]
-                self.store_sell_data_path = f'sell_{all_store[name_store]}'
-                return 1
-            else:
-                return 0
+        if not self.check_exist_file(self.path_store):
+            print("the store is not exist.")
+        else:
+            with open(self.path_store,'r+') as file:
+                all_store = json.load(file)
                 
-                   
-    def add_object_store(self, name: str, number: int):
+                if name_store in all_store.keys():
+                    self.curently_path_store = all_store[name_store]
+                    self.store_sell_data_path = f'/Users/mohamad/Documents/vscode/matlab/jsons_file/sell/sell_{all_store[name_store]}'
+                    
+                    return 1
+                else:
+                    return 0
+                                
+    def add_object_store(self, name: str, number: int,price:int,volume:int, desc:str ):
         '''this def add a new object in store.'''
-        if name == '' or number < 0:
-            return 2
         
-        data_store = {}
-        with open(self.curently_path_store,'r+') as file:
-            data_store = json.load(file)
-        
-            if name in data_store.keys():
-                return 0
-            else:
-                data_store[name]=number
+        if not self.check_exist_file(self.curently_path_store):
+            with open(self.curently_path_store,'w') as file:
+                data_store = {}
+                data_store[name]=[number,price]
                 json.dump(data_store,self.curently_path_store,indent=4)
+        else:
+            if name == '' or number < 0:
+                return 2
+            
+            data_store = {}
+            try:
+                with open(self.curently_path_store,'r') as file:
+                    data_store = json.load(file)
                 
+                with open(self.curently_path_store,'w') as file:
+                    if name in data_store.keys():
+                        return 0
+                    else:
+                        data_store[name]=[number,price,volume,desc]
+                        json.dump(data_store,file,indent=4)
+            except:
+                    with open(self.curently_path_store,'w') as file:
+                        if name in data_store.keys():
+                            json.dump(data_store,file,indent=4)
+                            print("this product exist.")
+                            return 0
+                        else:
+                            data_store[name]=[number,price,volume,desc]
+                            json.dump(data_store,file,indent=4)    
     def update_object_store(self,name:str):
         '''This function updates an existing object using its name or number.'''
 
         if name == '' :
             return 2
-        
         data_store = {}
-        with open(self.curently_path_store,'r+') as file:
-            data_store = json.load(file)
-            
-            if name in data_store.keys():
-                print(f"{name} = {data_store[name]}")   
-                while(1):
-                    chose_inp = int(input("1 = update name \n2 = update number\n3 = exit\nplease chose a option :"))  
-                    if chose_inp == 1:
-                        inp_name = inp_number("please enter new name: ")
-                        if inp_name == '':
-                            print("the unvalid input , try again")
-                            continue
-                        else :
-                            data_store[inp_name] = data_store.pop(name)
-                        json.dump(data_store,self.curently_path_store,indent=4) 
-                        break                                                                                                                    
-                    elif chose_inp == 2:
-                        inp_number = int(input("please enter number: "))
-                        if inp_number < 0 :
-                            print("the unvalid input , try again")
-                            continue
+        if not self.check_exist_file(self.curently_path_store):
+            print("this store is not exist.")
+        else:
+            with open(self.curently_path_store,'r+') as file:
+                data_store = json.load(file)
+                
+                if name in data_store.keys():
+                    print(f"{name} = {data_store[name]}")   
+                    while(1):
+                        chose_inp = int(input("1 = update name \n2 = update number\n3 = update price\n4 = exit\nplease chose a option :"))  
+                        if chose_inp == 1:
+                            inp_name = inp_number("please enter new name: ")
+                            if inp_name == '':
+                                print("the unvalid input , try again")
+                                continue
+                            else :
+                                data_store[inp_name] = data_store.pop(name)
+                            json.dump(data_store,self.curently_path_store,indent=4) 
+                            break                                                                                                                    
+                        elif chose_inp == 2:
+                            inp_number = int(input("please enter new number: "))
+                            if inp_number < 0 :
+                                print("the unvalid input , try again")
+                                continue
+                            else:
+                                data_store[name][0] = inp_number
+                            
+                            json.dump(data_store,self.curently_path_store,indent=4)
+                            break
+                        elif chose_inp == 3:
+                            inp_number = int(input("please enter new price: "))
+                            if inp_number < 0 :
+                                print("the unvalid input , try again")
+                                continue
+                            else:
+                                data_store[name][1] = inp_number
+                            
+                            json.dump(data_store,self.curently_path_store,indent=4)
+                            break
+                        elif chose_inp == 4:
+                            break
                         else:
-                            data_store[name] = inp_number
-                        
-                        json.dump(data_store,self.curently_path_store,indent=4)
-                        break
-                    elif chose_inp == 3:
-                        break
-                    else:
-                        print("the unvalid input.")
-                        continue
+                            print("the unvalid input.")
+                            continue
     
     def show_stores(self):
         all_store = {}
         count = 1
-        with open(self.path_store,'r') as file:
-            all_store = json.load(file)
-        
-        for i in all_store.keys():
-            print(f'{count}-{i}')
-            count += 1
-        while(1):
-            inp_store = int(input("please enter number of store:(Exit = 0) "))
-            if inp_store > count or inp_store <0 :
-                print("unvalid input , try again")
-                continue
-            else:
-                count = 1 
-                for i in all_store.keys():
-                    if inp_store == count:
-                        flag = self.select_store(i)
-                    if flag == 0 :
-                        print("bad input.")
-                        continue
-    
-    
-    def show_store_product(self):
-        with open(self.curently_path_store,'r') as file:
-            object_store = json.load(file)
-            count = 1
-            for i ,j in object_store.items():
-                print(f"{count} - {i} : price = {j[1]} : stock = {j[0]} : Description  = {j[2]}")
+        if not self.check_exist_file(self.path_store):
+            print("not have store exist.")
+            return 0
+        else:
+            with open(self.path_store,'r') as file:
+                all_store = json.load(file)
+            
+            for i in all_store.keys():
+                print(f'{count}-{i}')
                 count += 1
-            self.data_product_curently_store=object_store
+            while(1):
+                inp_store = input("please enter name of store:(Exit = 0) ")
+                if inp_store in all_store.keys():
+                    self.select_store(i)
+                    return 1
+                    
+                elif inp_store == 0:
+                    break
+                else:
+                    print("this store not exist.")
+                    continue
+                
+    def show_store_product(self):
+        if not self.check_exist_file(self.curently_path_store):
+            print("not exist any prouduct. go to main")
+            return 0
+        else:
+            # try:
+                object_store = {}
+                with open(self.curently_path_store,'r') as file:
+                    object_store = json.load(file)
+                    count = 1
+                    for i ,j in object_store.items():
+                        print(f"{count} - {i} : price = {j[1]} : stock = {j[0]} : Volume = {j[2]} :Description  = {j[3]}")
+                        count += 1
+                    self.data_product_curently_store=object_store
+                    return 1
+            # except:
+            #     print(self.curently_path_store)
+            #     print("not found store.")
+                    
         
     def Buy_product(self,inp_prouduct : dict):
         select_product = input("Please enter the name product:")
@@ -152,8 +210,10 @@ class Store:
             inp = input("this product not exist.(try agein = 0 , menu = 1)")
             if inp == '0':
                 self.Buy_product(inp_prouduct)
-            else:
+            elif inp == '1':
                 pass
+            else:
+                print("bad input.")
         else:
             number_product = input("please enter number of product: ")
             check = self.check_stock(inp_prouduct,number_product,select_product)
@@ -172,7 +232,7 @@ class Store:
                     print('bad input,fuck you.\n shopping cart.....')
                     self.shopping_cart()  
                       
-    def check_stock(self,inp_product:dict,number,name):
+    def check_save_stock(self,inp_product:dict,number,name):
         if number > inp_product[name][0]:
             return 0
         else:
@@ -202,13 +262,19 @@ class Store:
         try:
             with open(self.curently_path_store,'w') as file:
                 json.dump(self.data_product_curently_store,file,indent=4)
-            with open(self.store_sell_data_path,'w') as file:
-                json.dump(self.shopping_cart_dict,file,indent=4)
+            if not self.check_exist_file(self.store_sell_data_path):
+                with open(self.store_sell_data_path,'w') as file:
+                    json.dump(self.shopping_cart_dict,file,indent=4)
+            else:
+                data = {}
+                with open(self.store_sell_data_path,'r') as file:
+                    data = json.load(self.shopping_cart_dict,file,indent=4)
+
         except:
             return 0 
-                
+                       
     def payment(self):
-        inp = input("are you sure for pament ?? (Yes = 1 , No = 0)")
+        inp = input("are you sure for payment ?? (Yes = 1 , No = 0)")
         if inp == '1':
             i = self.save_all_data()
             print("thanks for shopping.")
@@ -220,19 +286,83 @@ class Store:
             print("menu...")
             pass
           
-    def authorization_seller(self):
+    def authorization_Admin(self):
         while(1):
-            with open("/seller_user.json",'r') as users_seller:
+            
+            with open("/Users/mohamad/Documents/vscode/matlab/jsons_file/admin/Admins_user.json",'r') as users_seller:
                 username = input("please enter user name:(Exit = 0)") 
+                if username == '0':
+                    break
                 password = input("please enter password: ")
                 users_data = json.load(users_seller)
                 if username in users_data.keys():
                     for i in range(1,4):
-                        if password == users_data[username][0]:
-                            self.select_store(users_data[username][1])
+                        if password == users_data[username]:
+                            print("sucsses")
+                            return 1
                         else:
                             print(f"unvalid password : {3-i} chance")
-                            continue                            
-                      
-                
-                        
+                            continue   
+                    return 0                          
+    def menu_admin(self):
+        while(1):
+            self.authorization_Admin()
+            self.show_stores()
+            inp = input("Add product = 1 , Update product = 2 , Delete product = 3 , Delete store = 4 , Create store = 5  , Exit = 0: ")
+            if inp == '1':
+                name = input('please enter name: ')
+                number = input('please enter number: ')
+                price = input('please enter price: ')
+                volume = input('please enter volume: ')
+                des = input('please enter Description: ')
+                self.add_object_store(name,int(number),int(price),int(volume),des)
+                print("added")
+            elif inp == '2':
+                self.show_store_product()
+                name = input('please enter name: ')
+                self.update_object_store(name)
+                print("updated.")
+            elif inp == '3':
+                pass
+            elif inp == '4':
+                pass  
+            elif inp == '5':
+                name = input('please enter name: ')
+                self.create_store(name)
+                price("created") 
+            elif inp == '0':
+                break 
+            else:
+                print("by.") 
+    def menu(self)->None:
+            inp = input("1 = Show product\n2 = Shopping cart\n3 = Menu\n4 = Exit :")
+            if inp == '1':
+                while(1):
+                    if self.show_stores():
+                        break
+                    else:
+                        continue
+                if not self.show_store_product():
+                    pass
+                else:
+                    self.Buy_product(self.data_product_curently_store)
+                    while(1):
+                        inp = input("Buy again = 1 , Continue = 2 :")
+                        if inp == '1':
+                            self.show_store_product()
+                            self.Buy_product(self.data_product_curently_store)
+                        elif inp == '2':
+                            break
+                        else:
+                            print("bad input, try again.")
+                    self.payment()
+                    self.save_all_data()
+            elif inp == '2':
+                self.shopping_cart()
+            elif inp == '3':
+                pass
+            elif inp == '4':
+                exit()
+            else:
+                print("Bad input.Menu......")
+                pass
