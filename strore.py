@@ -349,10 +349,11 @@ class Store:
         while(1):
             self.authorization_Admin()
             inp1 = input('Create or update product = 1 , Delete product = 2 , Delete store = 3 , Create store = 4  , Exit = 0')
-            self.show_stores()
+            
             
             if inp1 == '1':
                 inp = input("Add product = 1 , Update product = 2 , Exit = 0: ")
+                self.show_stores()
                 if inp == '1':
                     name = input('please enter name: ')
                     number = input('please enter number: ')
@@ -371,17 +372,19 @@ class Store:
                 else:
                     pass
             elif inp1 == '2':
+                self.show_stores()
                 self.show_store_product()
                 name = input('please enter name: ')
                 self.delete_product(name)
                 
             elif inp1 == '3':
+                self.show_stores()
                 name = input('please enter name: ')
                 self.delete_store(name)
             elif inp1 == '4':
                 name = input('please enter name: ')
                 self.create_store(name)
-                price("created") 
+                print("created") 
             elif inp1 == '0':
                 break 
             else:
