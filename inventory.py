@@ -32,13 +32,12 @@ class Depots:
             return 0
         
         
-        
     def create_depots(self, name:str):
         
         all_depots={}
         if not self.check_exist_file(self.path_depots):
             with open (self.path_depots , 'w') as file:
-                all_depots[name]= f'/Users/mohammad/Document/vscode/matlab/jsons_file/depots/{name}.json'
+                all_depots[name]= f'/Users/mohamad/Documents/vscode/matlab/jsons_file/admin/warehouser/depots/{name}.json'
                 json.dump(all_depots,file,indent=4)
                 return 1
         else:
@@ -201,7 +200,7 @@ class Depots:
     def authorization_warehouser(self):
         while(1):
             
-            with open("/Users/mohamad/Documents/vscode/matlab/jsons_file/warehouser/warehouser_user.json",'r') as users_seller:
+            with open("/Users/mohamad/Documents/vscode/matlab/jsons_file/admin/warehouser/warehouser_user.json",'r') as users_seller:
                 username = input("please enter user name:(Exit = 0)") 
                 if username == '0':
                     break
@@ -218,17 +217,17 @@ class Depots:
                     return 0              
                 
     def menu_warehouser(self):
-        
+        self.authorization_warehouser()
         while(1):
-            self.authorization_warehouser()
-            inp1 = input('view depot inventory = 1 , view store inventory = 2 , transformation = 3 , Exit = 0')
-            self.show_stores()
+
+            inp1 = input('view depot inventory = 1 , view store inventory = 2 , transformation = 3 , 4 = Create warehouse , 5 = Add object to warehouse , Exit = 0')
+            
             
             if inp1 == '1':
                 self.show_depots
             
             elif inp1 == '2':
-                self.show_store_product()
+                pass
 
             elif inp1 == '3':
                 name=input(" please enter the name of perfume : ")
@@ -237,7 +236,56 @@ class Depots:
                 target_type=input("where is your destination ? /n depot or store")
                 target=input(f"what is the name of target depot or store ? ")
                 self.transfer(name , quantity , source , target , target_type )
+            elif inp1 == '4':
+                inp_name = input("please enter name for warehouse: ")
+                if self.create_depots(inp_name):
+                    print("succes.")
+                else:
+                    print("not succes.")
+            elif inp1 == '5':
+                self.show_depots()
+                while(1):
+                    try:
+                        inp_name = input("please enter name for product:")
+                    except:
+                        print("bad input, please try again")
+                        continue
+                    try:
+                        inp_number = int(input("please enter number for product(int):"))
+                    except:
+                        print("bad input, please try again")
+                        continue
+                    try:
+                        inp_price = int(input("please enter price for product(int):"))
+                    except:
+                        print("bad input, please try again")
+                        continue
+                    try:
+                        inp_volume = int(input("please enter volume for product(int):"))
+                    except:
+                        print("bad input, please try again")
+                        continue
+                    try:
+                        inp_description = input("please enter description for product:")
+                    except:
+                        print("bad input, please try again")
+                        continue
+            
+                    try:
+                        self.add_object_depot(inp_name,inp_number,inp_price,inp_volume,inp_description)
+                    except:
+                        print("bad input, please try again")
+                        continue
+                    
+                    inp_exit = input("countinue (1 = Yes , 0 = No) : ")
+                    if inp_exit == '1':
+                        continue
+                    elif inp_exit == '0':
+                        break
+                    else:
+                        print("bad input.")
             elif inp1 == '0':
+        
                 break 
             else:
                 print("byyyyyyyyy.")             
