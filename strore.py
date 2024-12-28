@@ -70,8 +70,8 @@ class Store:
                 
                 if name_store in all_store.keys():
                     self.curently_path_store = all_store[name_store]
-                    self.store_sell_data_path = f'/Users/mohamad/Documents/vscode/matlab/jsons_file/sell/sell_{all_store[name_store]}'
-                    
+                    self.store_sell_data_path = f'/Users/mohamad/Documents/vscode/matlab/jsons_file/sell/sell_{name_store}.json'
+                    print(self.store_sell_data_path)
                     return 1
                 else:
                     return 0
@@ -192,7 +192,7 @@ class Store:
             print("not exist any prouduct. go to main")
             return 0
         else:
-            # try:
+            try:
                 object_store = {}
                 with open(self.curently_path_store,'r') as file:
                     object_store = json.load(file)
@@ -202,10 +202,12 @@ class Store:
                         count += 1
                     self.data_product_curently_store=object_store
                     return 1
-            # except:
-            #     print(self.curently_path_store)
-            #     print("not found store.")
+            except:
+                
+                print("not found store.")
                     
+    
+            
         
     def Buy_product(self,inp_prouduct : dict):
         select_product = input("Please enter the name product:")
@@ -218,8 +220,9 @@ class Store:
             else:
                 print("bad input.")
         else:
-            number_product = input("please enter number of product: ")
-            check = self.check_stock(inp_prouduct,number_product,select_product)
+            number_product = int(input("please enter number of product: "))
+            username = input("please enter username: ")
+            check = self.check_save_stock(inp_prouduct,number_product,select_product,username)
             if not check:
                 print("This value is not available,Try Again")
                 self.Buy_product(inp_prouduct)
@@ -230,29 +233,37 @@ class Store:
                     self.shopping_cart()
                     self.data_product_curently_store = inp_prouduct
                 elif inp == '0':
-                    self.Buy_product()
+                    count = 1
+                    for i ,j in self.data_product_curently_store.items():
+                        print(f"{count} - {i} : price = {j[1]} : stock = {j[0]} : Volume = {j[2]} :Description  = {j[3]}")
+                        count += 1
+                    self.Buy_product(inp_prouduct)
                 else:
                     print('bad input,fuck you.\n shopping cart.....')
                     self.shopping_cart()  
                       
-    def check_save_stock(self,inp_product:dict,number,name):
-        if number > inp_product[name][0]:
+    def check_save_stock(self,inp_product:dict,number,name,username):
+        if number > int(inp_product[name][0]):
             return 0
         else:
             date = str(persian_time.ShamsiDateTime())
             now = datetime.now()
             current_time = str(now.strftime("%H:%M:%S"))
-            
-            self.shopping_cart_dict[name] = [number,inp_product[name][1],date,current_time]
-                
+            try:
+                self.shopping_cart_dict[name] = [[username,self.shopping_cart_dict[name][0]+number,inp_product[name][1],date,current_time]]
+            except:
+                self.shopping_cart_dict[name] = [[username,number,inp_product[name][1],date,current_time]]
+
+                    
             return  int(inp_product[name][0])-number
         
     
     def shopping_cart(self):
         inp = input("1 = Payment\n2 = Menu")          
         n = 1
-        for i ,j in self.shopping_cart.items():
-            print(f'{n} - {i} | {j[0]} | {j[0]*j[1]}')
+        print(self.shopping_cart_dict)
+        for i ,j in self.shopping_cart_dict.items():
+            print(f'{n} - {i} | {j[0][1]} | {j[0][1]*j[0][2]} | {j[0][0]}')
             n+=1
         if inp == '1':
             self.payment()
@@ -262,20 +273,40 @@ class Store:
             print("bad input.")
             
     def save_all_data(self):
-        try:
-            with open(self.curently_path_store,'w') as file:
-                json.dump(self.data_product_curently_store,file,indent=4)
+        
+            if not self.check_exist_file(self.curently_path_store):
+                with open(self.curently_path_store,'w') as file:
+                    json.dump(self.data_product_curently_store,file,indent=4)
+            else:
+                with open(self.curently_path_store,'w') as file:
+                    json.dump(self.data_product_curently_store,file,indent=4)
+                
             if not self.check_exist_file(self.store_sell_data_path):
                 with open(self.store_sell_data_path,'w') as file:
                     json.dump(self.shopping_cart_dict,file,indent=4)
             else:
                 data = {}
                 with open(self.store_sell_data_path,'r') as file:
-                    data = json.load(file)
-                        
-
-        except:
-            return 0 
+                    data:dict = json.load(file) 
+                for i ,j in self.shopping_cart_dict.items():
+                    if i in data.keys():
+                        data[i].append(j.pop())
+                    else:
+                        data[i] = j.pop()
+                
+                with open(self.store_sell_data_path,'w') as file:
+                    json.dump(data,file,indent=4)
+                         
+    def show_sell_store(self):
+        if not self.check_exist_file(self.store_sell_data_path):
+            print("not exist.")
+        else:
+            data = {}
+            with open(self.store_sell_data_path,'r') as file:
+                data = json.load(file)
+            for i ,j in data.items():
+                for k in j:
+                    print(f"{i} = {k[0]} , {k[1]} , {k[2]} , {k[3]} , {k[4]} ")    
     def delete_product(self,name:str):
         if not self.check_exist_file(self.curently_path_store):
             print("not exist.")
@@ -307,12 +338,6 @@ class Store:
                 else:
                     print("not store.")
         
-        
-        
-        
-        
-        
-    
                     
     def payment(self):
         inp = input("are you sure for payment ?? (Yes = 1 , No = 0)")
@@ -324,6 +349,7 @@ class Store:
             else:
                 pass
         elif inp == '0':
+            # self.data_product_curently_store = self.da
             print("menu...")
             pass
           
@@ -346,9 +372,9 @@ class Store:
                             continue   
                     return 0                          
     def menu_admin(self):
+        self.authorization_Admin()
         while(1):
-            self.authorization_Admin()
-            inp1 = input('Create or update product = 1 , Delete product = 2 , Delete store = 3 , Create store = 4  , Exit = 0')
+            inp1 = input('Create or update product = 1 , Delete product = 2 , Delete store = 3 , Create store = 4 , Show_sell = 5 Exit = 0')
             
             
             if inp1 == '1':
@@ -360,6 +386,7 @@ class Store:
                     price = input('please enter price: ')
                     volume = input('please enter volume: ')
                     des = input('please enter Description: ')
+                    print(price,volume,des)
                     self.add_object_store(name,int(number),int(price),int(volume),des)
                     print("added")
                 elif inp == '2':
@@ -369,6 +396,7 @@ class Store:
                     print("updated.")
                 elif inp == '0':
                     pass
+                
                 else:
                     pass
             elif inp1 == '2':
@@ -385,12 +413,15 @@ class Store:
                 name = input('please enter name: ')
                 self.create_store(name)
                 print("created") 
+            elif inp1 == '5':
+                self.show_stores()
+                self.show_sell_store()
             elif inp1 == '0':
                 break 
             else:
                 print("by.") 
     def menu(self)->None:
-            inp = input("1 = Show product\n2 = Shopping cart\n3 = Menu\n4 = Exit :")
+            inp = input("1 = Show product\n2 = Shopping cart\n3 = Menu\n :")
             if inp == '1':
                 while(1):
                     if self.show_stores():
@@ -400,24 +431,33 @@ class Store:
                 if not self.show_store_product():
                     pass
                 else:
+                    f = True
                     self.Buy_product(self.data_product_curently_store)
                     while(1):
                         inp = input("Buy again = 1 , Continue = 2 :")
                         if inp == '1':
-                            self.show_store_product()
                             self.Buy_product(self.data_product_curently_store)
                         elif inp == '2':
+                            f = False
                             break
                         else:
                             print("bad input, try again.")
-                    self.payment()
-                    self.save_all_data()
+                    if f:
+                        self.payment()
+                        self.save_all_data()
+                    else:
+                        pass
             elif inp == '2':
-                self.shopping_cart()
+                inp = input("1 = Delete shoping cart\n2 = See the shoping cart : ")
+                if inp == '1':
+                    self.shopping_cart_dict = {}
+                    print("deleted.")
+                elif inp == '2':
+                    self.shopping_cart()
+                else:
+                    print("bad inputs.")
             elif inp == '3':
                 pass
-            elif inp == '4':
-                exit()
             else:
                 print("Bad input.Menu......")
                 pass
