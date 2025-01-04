@@ -8,7 +8,6 @@ print("Welcome to store")
 def menu(inp):
 
 
-          
         if inp == 1:
             store.menu()
         elif inp == 2 :

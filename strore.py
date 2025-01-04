@@ -161,6 +161,8 @@ class Store:
                         else:
                             print("the unvalid input.")
                             continue
+                else:
+                    print('product not exist')
     
     def show_stores(self):
         all_store = {}
@@ -188,7 +190,7 @@ class Store:
                     continue
                 
     def show_store_product(self):
-        if not self.check_exist_file(self.curently_path_store):
+        if not self.check_exist_file(self.curently_path_depot):
             print("not exist any prouduct. go to main")
             return 0
         else:
@@ -220,48 +222,58 @@ class Store:
             else:
                 print("bad input.")
         else:
-            number_product = int(input("please enter number of product: "))
-            username = input("please enter username: ")
-            check = self.check_save_stock(inp_prouduct,number_product,select_product,username)
-            if not check:
-                print("This value is not available,Try Again")
-                self.Buy_product(inp_prouduct)
-            else:
-                inp_prouduct[select_product][0] = check
-                inp = input("going shopping cart?(1 = yes , 0 = no)")
-                if inp == '1':
-                    self.shopping_cart()
-                    self.data_product_curently_store = inp_prouduct
-                elif inp == '0':
-                    count = 1
-                    for i ,j in self.data_product_curently_store.items():
-                        print(f"{count} - {i} : price = {j[1]} : stock = {j[0]} : Volume = {j[2]} :Description  = {j[3]}")
-                        count += 1
+            try:
+                number_product = int(input("please enter number of product: "))
+                username = input("please enter username: ")
+                check = self.check_save_stock(inp_prouduct,number_product,select_product,username)
+                if not check:
+                    print(check)
+                    print("This value is not available,Try Again")
                     self.Buy_product(inp_prouduct)
                 else:
-                    print('bad input,fuck you.\n shopping cart.....')
-                    self.shopping_cart()  
-                      
-    def check_save_stock(self,inp_product:dict,number,name,username):
-        if number > int(inp_product[name][0]):
-            return 0
-        else:
-            date = str(persian_time.ShamsiDateTime())
-            now = datetime.now()
-            current_time = str(now.strftime("%H:%M:%S"))
-            try:
-                self.shopping_cart_dict[name] = [[username,self.shopping_cart_dict[name][0]+number,inp_product[name][1],date,current_time]]
+                    inp_prouduct[select_product][0] = check
+                    inp = input("going shopping cart?(1 = yes , 0 = no)")
+                    if inp == '1':
+                        self.shopping_cart()
+                        self.data_product_curently_store = inp_prouduct
+                    elif inp == '0':
+                        count = 1
+                        for i ,j in self.data_product_curently_store.items():
+                            print(f"{count} - {i} : price = {j[1]} : stock = {j[0]} : Volume = {j[2]} :Description  = {j[3]}")
+                            count += 1
+                        self.Buy_product(inp_prouduct)
+                    else:
+                        print('bad input,fuck you.\n shopping cart.....')
+                        self.shopping_cart() 
             except:
-                self.shopping_cart_dict[name] = [[username,number,inp_product[name][1],date,current_time]]
+                print("erooor") 
+                      
+    def check_save_stock(self, inp_product: dict, number: int, name: str, username: str) -> int:
+        available_stock = int(inp_product[name][0])
 
-                    
-            return  int(inp_product[name][0])-number
+        if number <= available_stock:
+            try:
+                date = str(persian_time.ShamsiDateTime())
+                now = datetime.now()
+                current_time = now.strftime("%H:%M:%S")
+
+                if name in self.shopping_cart_dict:
+                    self.shopping_cart_dict[name][0] += number
+                else:
+                    self.shopping_cart_dict[name] = [[username, number, inp_product[name][1], date, current_time]]
+
+                return available_stock - number
+            except:
+                return 0
+        
+        return 0
+            
         
     
     def shopping_cart(self):
         inp = input("1 = Payment\n2 = Menu")          
         n = 1
-        print(self.shopping_cart_dict)
+        
         for i ,j in self.shopping_cart_dict.items():
             print(f'{n} - {i} | {j[0][1]} | {j[0][1]*j[0][2]} | {j[0][0]}')
             n+=1
@@ -354,12 +366,11 @@ class Store:
             pass
           
     def authorization_Admin(self):
-        while(1):
-            
+        while(1): 
             with open("/Users/mohamad/Documents/vscode/matlab/jsons_file/admin/Admins_user.json",'r') as users_seller:
                 username = input("please enter user name:(Exit = 0)") 
                 if username == '0':
-                    break
+                    return 0
                 password = input("please enter password: ")
                 users_data = json.load(users_seller)
                 if username in users_data.keys():
@@ -372,54 +383,63 @@ class Store:
                             continue   
                     return 0                          
     def menu_admin(self):
-        self.authorization_Admin()
-        while(1):
-            inp1 = input('Create or update product = 1 , Delete product = 2 , Delete store = 3 , Create store = 4 , Show_sell = 5 Exit = 0')
-            
-            
-            if inp1 == '1':
-                inp = input("Add product = 1 , Update product = 2 , Exit = 0: ")
-                self.show_stores()
-                if inp == '1':
-                    name = input('please enter name: ')
-                    number = input('please enter number: ')
-                    price = input('please enter price: ')
-                    volume = input('please enter volume: ')
-                    des = input('please enter Description: ')
-                    print(price,volume,des)
-                    self.add_object_store(name,int(number),int(price),int(volume),des)
-                    print("added")
-                elif inp == '2':
+        check = self.authorization_Admin()
+        if check == 0:
+            print("cant open")
+            return 0 
+        else:  
+            while(1):
+                inp1 = input('Create or update product = 1 , Delete product = 2 , Delete store = 3 , Create store = 4 , Show_sell = 5 Exit = 0')
+                
+                
+                if inp1 == '1':
+                    inp = input("Add product = 1 , Update product = 2 , Exit = 0: ")
+                    self.show_stores()
+                    if inp == '1':
+                        name = input('please enter name: ')
+                        number = input('please enter number: ')
+                        price = input('please enter price: ')
+                        volume = input('please enter volume: ')
+                        des = input('please enter Description: ')
+                        
+                        self.add_object_store(name,int(number),int(price),int(volume),des)
+                        print("added")
+                    elif inp == '2':
+                        self.show_store_product()
+                        name = input('please enter name: ')
+                        self.update_object_store(name)
+                        print("updated.")
+                    elif inp == '0':
+                        pass
+                    
+                    else:
+                        pass
+                elif inp1 == '2':
+                    self.show_stores()
                     self.show_store_product()
+                    inp = input("are you sure?(0 = no , 1 = yes)")
+                    if inp == "0":
+                        return 0
+                    elif inp == "1":
+                        self.delete_product(name)
+                    else:
+                        print("bad input")
+                    
+                elif inp1 == '3':
+                    self.show_stores()
                     name = input('please enter name: ')
-                    self.update_object_store(name)
-                    print("updated.")
-                elif inp == '0':
-                    pass
-                
+                    self.delete_store(name)
+                elif inp1 == '4':
+                    name = input('please enter name: ')
+                    self.create_store(name)
+                    print("created") 
+                elif inp1 == '5':
+                    self.show_stores()
+                    self.show_sell_store()
+                elif inp1 == '0':
+                    break 
                 else:
-                    pass
-            elif inp1 == '2':
-                self.show_stores()
-                self.show_store_product()
-                name = input('please enter name: ')
-                self.delete_product(name)
-                
-            elif inp1 == '3':
-                self.show_stores()
-                name = input('please enter name: ')
-                self.delete_store(name)
-            elif inp1 == '4':
-                name = input('please enter name: ')
-                self.create_store(name)
-                print("created") 
-            elif inp1 == '5':
-                self.show_stores()
-                self.show_sell_store()
-            elif inp1 == '0':
-                break 
-            else:
-                print("by.") 
+                    print("by.") 
     def menu(self)->None:
             inp = input("1 = Show product\n2 = Shopping cart\n3 = Menu\n :")
             if inp == '1':
