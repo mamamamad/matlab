@@ -2,7 +2,10 @@ import json
 import shamsi_datetime as persian_time
 from datetime import datetime
 import os
+import strore as s
 
+
+st = s.Store()
 
 
 class Depots:
@@ -16,13 +19,13 @@ class Depots:
     """
     
     def __init__(self):
-        self.path_depots = '/Users/mohamad/Documents/vscode/matlab/jsons_file/depots_path.json'
+        self.path_depots = '/Users/mohamad/Documents/vscode/matlab/jsons_file/admin/warehouser/depots/depots_path.json'
         self.path_storre = '/Users/mohamad/Documents/vscode/matlab/jsons_file/stors_path.json'
         self.admin = ''
         self.curently_path_store= ''
         self.curently_path_depot= ''
         self.store_sell_data_path = ''
-        self.shopping_cart_dict={}
+        
         self.data_product_curently_store = {}
     
     def check_exist_file(self,path):
@@ -36,10 +39,13 @@ class Depots:
         
         all_depots={}
         if not self.check_exist_file(self.path_depots):
-            with open (self.path_depots , 'w') as file:
-                all_depots[name]= f'/Users/mohamad/Documents/vscode/matlab/jsons_file/admin/warehouser/depots/{name}.json'
-                json.dump(all_depots,file,indent=4)
-                return 1
+            try:
+                with open (self.path_depots , 'w') as file:
+                    all_depots[name]= f'/Users/mohamad/Documents/vscode/matlab/jsons_file/admin/warehouser/depots/{name}.json'
+                    json.dump(all_depots,file,indent=4)
+                    return 1
+            except:
+                print("error")
         else:
             with open(self.path_depots , 'r') as file:
                 try:
@@ -47,14 +53,17 @@ class Depots:
                 except:
                     pass          
             with open (self.path_depots , 'w') as file:
-                if name in all_depots.keys():
-                    json.dump(all_depots , file , indent = 4)
-                    print(" depot exist")
-                    return 0 
-                else:
-                    all_depots[name]= f'/Users/mohammad/Document/vscode/matlab/jsons_file/depots/{name}.json'
-                    json.dump(all_depots , file , indemt = 4)
-                    return 1
+                try:
+                    if name in all_depots.keys():
+                        json.dump(all_depots , file , indent = 4)
+                        print(" depot exist")
+                        return 0 
+                    else:
+                        all_depots[name]= f'/Users/mohammad/Document/vscode/matlab/jsons_file/depots/{name}.json'
+                        json.dump(all_depots , file , indent = 4)
+                        return 1
+                except:
+                    print("errooos")
             
         
     def select_depot(self , name_depot:str):
@@ -65,7 +74,9 @@ class Depots:
             with open (self.path_depots , 'r+') as file:
                 all_depots=json.load(file)
                 if name_depot in all_depots.keys():
-                    self.currently_path_depot=all_depots[name_depot]  
+                    
+                    self.curently_path_depot=all_depots[name_depot]  
+                    print(self.curently_path_depot)
                     return 1
                 else:
                     return 0      
@@ -100,7 +111,26 @@ class Depots:
                     else:
                         data_depot[name]=[number , price , volume ,desc ]
                         json.dump(data_depot , file , indent = 4)
+    
+    
+    def show_depot_product(self):
+        if not self.check_exist_file(self.curently_path_depot):
+            print("not exist any prouduct. go to main")
+            return 0
+        else:
+            try:
+                object_store = {}
+                with open(self.curently_path_depot,'r') as file:
+                    object_store = json.load(file)
+                    count = 1
+                    for i ,j in object_store.items():
+                        print(f"{count} - {i} : price = {j[1]} : stock = {j[0]} : Volume = {j[2]} :Description  = {j[3]}")
+                        count += 1
+                    self.data_product_curently_store=object_store
+                    return 1
+            except:
                 
+                print("not found depot.")          
                 
     def transfer(self, name: str, quantity: int, source_depot: str, target: str, target_type: str ):
         if not self.check_exist_file(self.path_depots):
@@ -188,7 +218,8 @@ class Depots:
             while(1):
                 inp_depots = input("please enter depot name :(Exit = 0) ")
                 if inp_depots in all_depots.keys():
-                    self.select_depot(i)
+
+                    self.select_depot(inp_depots)
                     return 1
                     
                 elif inp_depots == 0:
@@ -224,10 +255,13 @@ class Depots:
             
             
             if inp1 == '1':
-                self.show_depots
-            
+                self.show_depots()
+                self.show_depot_product()
             elif inp1 == '2':
-                pass
+                st.show_stores()
+                
+                
+                
 
             elif inp1 == '3':
                 name=input(" please enter the name of perfume : ")
@@ -274,7 +308,7 @@ class Depots:
                     try:
                         self.add_object_depot(inp_name,inp_number,inp_price,inp_volume,inp_description)
                     except:
-                        print("bad input, please try again")
+                        print("bad input, please try againlll")
                         continue
                     
                     inp_exit = input("countinue (1 = Yes , 0 = No) : ")
