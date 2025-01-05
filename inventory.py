@@ -59,7 +59,7 @@ class Depots:
                         print(" depot exist")
                         return 0 
                     else:
-                        all_depots[name]= f'/Users/mohammad/Document/vscode/matlab/jsons_file/depots/{name}.json'
+                        all_depots[name]= f'/Users/mohamad/Documents/vscode/matlab/jsons_file/admin/warehouser/depots/{name}.json'
                         json.dump(all_depots , file , indent = 4)
                         return 1
                 except:
@@ -76,14 +76,14 @@ class Depots:
                 if name_depot in all_depots.keys():
                     
                     self.curently_path_depot=all_depots[name_depot]  
-                    print(self.curently_path_depot)
+    
                     return 1
                 else:
                     return 0      
             
     def add_object_depot(self , name:str , number:int , price:int ,volume:int, desc:str):
-        if not self.check_exist_file(self.currently_path_depot):
-            with open(self.currently_path_depot , 'w') as file :
+        if not self.check_exist_file(self.curently_path_depot):
+            with open(self.curently_path_depot , 'w') as file :
                 data_depot={}
                 
                 data_depot[name]=[number , price , volume , desc]
@@ -93,9 +93,9 @@ class Depots:
                 return 2
             data_depot={}
             try:
-                with open(self.currently_path_depot , 'r') as file:
+                with open(self.curently_path_depot , 'r') as file:
                     data_depot=json.load(file)
-                with open(self.currently_path_depot , 'w')as file:
+                with open(self.curently_path_depot , 'w')as file:
                     if name in data_depot.keys():
                         return 0 
                     else:
@@ -103,7 +103,7 @@ class Depots:
                         json.dump(data_depot , file , indent = 4)
                             
             except:
-                with open (self.currently_path_depot , 'w') as file :
+                with open (self.curently_path_depot , 'w') as file :
                     if name in data_depot.keys():
                         json.dump(data_depot , file , indent = 4)
                         print(" this product exist.")
@@ -124,7 +124,7 @@ class Depots:
                     object_store = json.load(file)
                     count = 1
                     for i ,j in object_store.items():
-                        print(f"{count} - {i} : price = {j[1]} : stock = {j[0]} : Volume = {j[2]} :Description  = {j[3]}")
+                        print(f"{count} - {i} : price = {j[1]} : stock = {j[0]} : Volume(ml) = {j[2]} :Description  = {j[3]}")
                         count += 1
                     self.data_product_curently_store=object_store
                     return 1
@@ -158,6 +158,7 @@ class Depots:
             with open(source_path, 'w') as file:
                 json.dump(source_data, file, indent=4)
             if target_type == "depot":
+                
                 if target not in all_depots:
                     print("Target depot not exist ")
                     return 0
@@ -177,17 +178,18 @@ class Depots:
                     json.dump(target_data, file, indent=4)
             
             elif target_type == "store":
-                if not self.check_exist_file(target):
+                st.select_store(target)
+                if not self.check_exist_file(st.curently_path_store):
                     print("Store file  not exist.")
                     return 0
-                with open(target, 'r') as file:
+                with open(st.curently_path_store, 'r') as file:
                     store_data = json.load(file)
                 if name in store_data:
                     store_data[name][0] += quantity  
                 else:
                     store_data[name] = source_data[name]
                     store_data[name][0]=quantity
-                with open(target, 'w') as file:
+                with open(st.curently_path_store, 'w') as file:
                     json.dump(store_data, file, indent=4)
             else:
                 print("Invalid target type . Use 'depot' or 'store'.")
@@ -202,7 +204,7 @@ class Depots:
         
         
         
-    def show_depots(self):
+    def show_depots(self,flag=True):
         all_depots = {}
         count = 1
         if not self.check_exist_file(self.path_depots):
@@ -215,18 +217,22 @@ class Depots:
             for i in all_depots.keys():
                 print(f'{count}-->{i}')
                 count += 1
-            while(1):
-                inp_depots = input("please enter depot name :(Exit = 0) ")
-                if inp_depots in all_depots.keys():
+            if flag:
+                
+                while(1):
+                    inp_depots = input("please enter depot name :(Exit = 0) ")
+                    if inp_depots in all_depots.keys():
 
-                    self.select_depot(inp_depots)
-                    return 1
-                    
-                elif inp_depots == 0:
-                    break
-                else:
-                    print("this depot not exist.")
-                    continue    
+                        self.select_depot(inp_depots)
+                        return inp_depots
+                        
+                    elif inp_depots == 0:
+                        break
+                    else:
+                        print("this depot not exist.")
+                        continue   
+            else:
+                pass 
     
     def authorization_warehouser(self):
         while(1):
@@ -252,23 +258,30 @@ class Depots:
         while(1):
 
             inp1 = input('view depot inventory = 1 , view store inventory = 2 , transformation = 3 , 4 = Create warehouse , 5 = Add object to warehouse , Exit = 0')
-            
-            
             if inp1 == '1':
                 self.show_depots()
                 self.show_depot_product()
             elif inp1 == '2':
                 st.show_stores()
-                
-                
-                
 
             elif inp1 == '3':
+                source = self.show_depots()
+                self.show_depot_product()
                 name=input(" please enter the name of perfume : ")
                 quantity=int(input(f" how much {name} do u want to transfer ? "))
-                source=input(f"what is the name of source depot ? ")
-                target_type=input("where is your destination ? /n depot or store")
-                target=input(f"what is the name of target depot or store ? ")
+                
+                target_type=input("where is your destination ? \n depot or store :")
+                if target_type == "store":
+                    st.show_stores(flag =False)
+                    target=input(f"what is the name of target store ? ")
+                elif target_type == "depot":
+                    self.show_depots(flag=False)
+                    target=input(f"what is the name of target depot ? ")
+                else:
+                    print("bad input")
+                    continue
+
+                
                 self.transfer(name , quantity , source , target , target_type )
             elif inp1 == '4':
                 inp_name = input("please enter name for warehouse: ")
@@ -305,11 +318,11 @@ class Depots:
                         print("bad input, please try again")
                         continue
             
-                    try:
-                        self.add_object_depot(inp_name,inp_number,inp_price,inp_volume,inp_description)
-                    except:
-                        print("bad input, please try againlll")
-                        continue
+                    # try:
+                    self.add_object_depot(inp_name,inp_number,inp_price,inp_volume,inp_description)
+                    # except:
+                    #     print("bad input, please try againlll")
+                    #     continue
                     
                     inp_exit = input("countinue (1 = Yes , 0 = No) : ")
                     if inp_exit == '1':
