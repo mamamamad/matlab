@@ -65,13 +65,14 @@ class Store:
         if not self.check_exist_file(self.path_store):
             print("the store is not exist.")
         else:
+            
             with open(self.path_store,'r+') as file:
                 all_store = json.load(file)
                 
                 if name_store in all_store.keys():
                     self.curently_path_store = all_store[name_store]
                     self.store_sell_data_path = f'/Users/mohamad/Documents/vscode/matlab/jsons_file/sell/sell_{name_store}.json'
-                    print(self.store_sell_data_path)
+                    
                     return 1
                 else:
                     return 0
@@ -107,7 +108,8 @@ class Store:
                             return 0
                         else:
                             data_store[name]=[number,price,volume,desc]
-                            json.dump(data_store,file,indent=4)    
+                            json.dump(data_store,file,indent=4)  
+                              
     def update_object_store(self,name:str):
         '''This function updates an existing object using its name or number.'''
 
@@ -164,7 +166,7 @@ class Store:
                 else:
                     print('product not exist')
     
-    def show_stores(self):
+    def show_stores(self,flag=True):
         all_store = {}
         count = 1
         if not self.check_exist_file(self.path_store):
@@ -177,35 +179,42 @@ class Store:
             for i in all_store.keys():
                 print(f'{count}-{i}')
                 count += 1
-            while(1):
-                inp_store = input("please enter name of store:(Exit = 0) ")
-                if inp_store in all_store.keys():
-                    self.select_store(i)
-                    return 1
-                    
-                elif inp_store == 0:
-                    break
-                else:
-                    print("this store not exist.")
-                    continue
+            if flag:
+                
+                while(1):
+                    inp_store = input("please enter name of store:(Exit = 0) ")
+                    if inp_store in all_store.keys():
+                        
+                        self.select_store(inp_store)
+                        return 1
+                        
+                    elif inp_store == 0:
+                        break
+                    else:
+                        print("this store not exist.")
+                        continue
+            else:
+                pass
                 
     def show_store_product(self):
-        if not self.check_exist_file(self.curently_path_depot):
+        if not self.check_exist_file(self.curently_path_store):
             print("not exist any prouduct. go to main")
             return 0
         else:
             try:
                 object_store = {}
+                
                 with open(self.curently_path_store,'r') as file:
+                    print(self.curently_path_store)
                     object_store = json.load(file)
                     count = 1
                     for i ,j in object_store.items():
-                        print(f"{count} - {i} : price = {j[1]} : stock = {j[0]} : Volume = {j[2]} :Description  = {j[3]}")
+                
+                        print(f"{count} - {i} : price = {j[1]} : stock = {j[0]} : Volume(ml) = {j[2]} :Description  = {j[3]}")
                         count += 1
                     self.data_product_curently_store=object_store
                     return 1
             except:
-                
                 print("not found store.")
                     
     
@@ -227,7 +236,7 @@ class Store:
                 username = input("please enter username: ")
                 check = self.check_save_stock(inp_prouduct,number_product,select_product,username)
                 if not check:
-                    print(check)
+                    
                     print("This value is not available,Try Again")
                     self.Buy_product(inp_prouduct)
                 else:

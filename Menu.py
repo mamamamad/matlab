@@ -10,16 +10,14 @@ def menu(inp):
 
         if inp == 1:
             store.menu()
-        elif inp == 2 :
-            pass
-        elif inp == 3:
+        elif inp == 2:
             store.menu_admin()
             pass
-        elif inp == 4:
+        elif inp == 3:
             inventory.menu_warehouser()
-        elif inp == 5:
+        elif inp == 4:
             print("Thanks for coming.\nGood by")
             exit(0) 
 while (1):
-    inp = int(input("1 = Customers \n2 = The seller\n3 = Admin\n4 = Warehouse\n5 = Exit\nPlease chose a option: "))
+    inp = int(input("1 = Stores \n2 = Admin\n3 = Warehouse\n4 = Exit\nPlease chose a option: "))
     menu(inp)
